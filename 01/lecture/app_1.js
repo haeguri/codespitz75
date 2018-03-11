@@ -1,3 +1,6 @@
+//----------------------------
+// Table이 모든 역할을 수행하는 버전
+//----------------------------
 const Table = (_=>{
     const Private = Symbol();
     return class{
