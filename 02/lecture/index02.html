@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>[ 소유 위임 ]</title>
+</head>
+<body>
+    <img src="" alt="">
+    <div class="block">
+
+    </div>
+    <script>
+        const Github = class{
+            constructor(id, repo){
+                this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
+            }
+            load(path = 'README.md'){
+                const id = 'callback' + Github._id++;
+                const f = Github[id] = ({data: {content}}) => {
+                    delete Github[id];
+                    document.head.removeChild(s);
+                    // this._parser(content); // 위임부분
+                    this._parser[0](content, ...this._parser[1]); // 자유 변수를 통한 확장
+                    // 여기서 자유변수는 content!
+                }
+                const s = document.createElement('script');
+                s.src = `${this._base + path}?callback=Github.${id}`;
+                document.head.appendChild(s);
+            }
+            // set parser(v){this._parser = v;} // v -> 위임 객체(전략 객체)
+            setParser(f, ...arg){this._parser = [f, arg];} // 자유변수를 통한 확장
+        }
+        Github._id = 0;
+        
+        // 소유 위임
+        // Github 클래스는 정적으로 정의되지만,
+        // Github 클래스의 멤버 _parser는 런타임에서 동적으로 설정되어 실행된다.
+
+        const el = v=>document.querySelector(v);
+        const parseMd = (v, el) => el.innerHTML = d64(v).split('\n').map(v=>{
+            let i = 3;
+            while(i--){
+                if(v.startsWith('#'.repeat(i + 1))) {
+                    return `<h${i + 1}>${v.substr(i + 1)}</h${i + 1}>`;
+                }
+            }
+            return v;
+        }).join('<br>');
+        const d64 = v => decodeURIComponent(
+            atob(v).split('').map(
+                c =>'%'+('00'+c.charCodeAt(0).toString(16)
+            ).slice(-2)).join('')
+        )
+        const loader = new Github('octref', 'polacode');
+        // data:image/png;
+        // vs
+        // data:text/plain;
+        const parseImg = (v, el) => el.src=`data:image/png;base64, ${v}`;
+
+        //1. 소유 위임
+        // loader.parser = parseImg;
+        // loader.load('icon.png');
+        // loader.parser = parseMd;
+        // loader.load('README.md');
+
+        //2. Github load 메서드의 자유변수를 통한 소유 위임을 확장.
+        // loader.setParser(parseImg, el('img'));
+        // loader.load('icon.png');
+        // loader.setParser(parseMd, el('.block'));
+        // loader.load('README.md');
+        
+        // 3. 실행시점 선택 위임
+        const LoaderWithRoute = class {
+            constructor(id, repo) {
+                this._git = new Github(id, repo);
+                this._router = new Map;
+            }
+            add(ext, f, ...arg) {
+                ext.split(',').forEach(v=>this._router.set(v, [f, ...arg]));
+            }
+            load(v) {
+                // const ext = this._v.split('.').pop();
+                const ext = v.split('.').pop();
+                if(!this._router.has(ext)) return;
+                this._git.setParser(...this._router.get(ext));
+                this._git.load(v);
+            }
+        }
+
+        const lwr = new LoaderWithRoute('octref', 'polacode');
+        lwr.add('jpg,png,gif', parseImg, el('img'));
+        lwr.add('md', parseMd, el('.block'));
+        
+        lwr.load('icon.png');
+        lwr.load('README.md');
+
+    </script>
+</body>
+</html>

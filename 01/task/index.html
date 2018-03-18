@@ -43,9 +43,8 @@
             async render(data) {
                 if(!(data instanceof Data)) throw 'invalid param';            
                 // [ 과제 #2 풀이 ]
-                // - Info 클래스에 getFields 메서드 추가
-                // - Renderer는 getFields 메서드를 이용하여 필드 목록을 받아오고, Info의 필드명과 값을 Renderer 인스턴스의 fields 객체에 등록
-                // - TableRenderer는 _info를 직접 참조하지 않고, 인스턴스의 fields 객체를 통해 title, header, items 접근 가능.
+                // - title, header, items 데이터를 this._data에 저장.
+                // - TableRenderer에서 Info를 직접 참조하는 것을 없애고, 부모에 선언된 this._data만 참조하도록 변경
                 const _info = await data.getData();
                 this._data = {
                     caption: _info.title,
@@ -73,14 +72,17 @@
                     parent.innerHTML = "";
                     const table = document.createElement('table');
                     const caption = document.createElement('caption');
+                    // _info.title => data.caption
                     caption.innerHTML = this._data.caption;
                     table.appendChild(caption);  
                     table.appendChild(
+                        // _info.header => _data.header
                         this._data.header.reduce(
                         (thead, data)=>(thead.appendChild(document.createElement('th')).innerHTML = data, thead),
                         document.createElement("thead"))
                     );
                     parent.appendChild(
+                        // _info.items => _data.items
                         this._data.items.reduce(
                         (table, row)=>(table.appendChild(
                             row.reduce(
@@ -111,7 +113,6 @@
                     }catch(eMsg){
                         console.log(eMsg);
                         if(row.length > header.length){
-                            const diff = row.length - header.length;
                             while(row.length !== header.length) row.pop();
                         } 
                         else if(row.length < header.length){

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <img src="" alt="">
+    <div class="block"></div>
+    <script>
+        
+        const Github = class{
+            constructor(id, repo){
+                this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
+            }
+            load(path = 'README.md'){
+                const id = 'callback' + Github._id++;
+                const f = Github[id] = ({data: {content}}) => {
+                    delete Github[id];
+                    document.head.removeChild(s);
+                    this._parser.parse(content);
+                }
+                const s = document.createElement('script');
+                s.src = `${this._base + path}?callback=Github.${id}`;
+                document.head.appendChild(s);
+            }
+            setParser(loader){
+                this._parser = loader;
+            }
+        }
+        Github._id = 0;
+
+        const Loader = class{
+            constructor(s){
+                this._el = document.querySelector(s);
+            }
+            parse(v){
+                this._parse(v);
+            }
+            _parse(){throw '_parse is must overrided.';}
+        }
+
+        const MdLoader = class extends Loader{
+            _parse(v){
+                this._el.innerHTML = this._d64(v).split('\n').map(v => {
+                    let i = 3;
+                    while(i--){
+                        if(v.startsWith('#'.repeat(i + 1))) {
+                            return `<h${i + 1}>${v.substr(i + 1)}</h${i + 1}>`;
+                        }
+                    }
+                    return v;
+                }).join('<br>');
+            }
+            _d64(v) {
+                return decodeURIComponent(
+                    atob(v).split('').map(
+                        c =>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)
+                    ).join('')
+                )
+            }
+        }
+
+        const ImageLoader = class extends Loader{
+            _parse(v){
+                this._el.src = `data:text/plain;base64, ${v}`;
+            }
+        }
+
+        const loader = new Github('octref', 'polacode');
+
+        const img = new ImageLoader('img');
+        loader.setParser(img);
+        loader.load('icon.png');
+
+        const md = new MdLoader('.block');
+        loader.setParser(md);
+        loader.load('README.md');
+    </script>
+</body>
+</html>
