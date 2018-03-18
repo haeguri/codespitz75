@@ -11,13 +11,13 @@
 - 동일출처정책을 우회하는 방법에는 CORS와 JSONP가 있다.
 
 ### CORS
-- CORS(Cross Origin Resource Sharing) 기법을 사용하기 위해서는 서버 측에서 HTTP Response의 헤더를 수정해야 한다.
-- 하지만 CORS 기법은 IE 7이하에서는 사용할 수 없다. 
+- CORS(Cross Origin Resource Sharing) 기법을 사용하기 위해서는 서버 측에서 HTTP Response의 헤더를 수정하면 된다.
+- CORS 기법의 가장 큰 제약사항은 IE 7이하에서는 지원하지 않는다.
 - 또 IE 8,9에서는 도메인이 다른 서버가 프로토콜까지 일치해야 하는 제한(http에서 https로 요청 불가)이 있다.
 
 ### JSONP
 - JSONP는 위에서 언급한 것처럼 다른 출처라도 리소스 요청은 허용되는 점을 이용한 기법이다.
-- 또한 JSONP에서는 하위 IE에서도 잘 동작하고, CORS에 비해서 제약사항도 적다.
+- 또한 JSONP에서는 하위 IE에서도 잘 동작하고, 서버 측 코드의 수정도 필요하지만 CORS에 비해서 제약사항도 적다.
 
 ### JSONP 요청
 
