@@ -73,28 +73,41 @@
         
         // 3. 실행시점 선택 위임
         const LoaderWithRoute = class {
-            constructor(id, repo) {
-                this._git = new Github(id, repo);
-                this._router = new Map;
+            constructor() {
+                this._repo = new Map;
             }
-            add(ext, f, ...arg) {
-                ext.split(',').forEach(v=>this._router.set(v, [f, ...arg]));
+            addRepo(key, id, repo) {
+                this._repo.set(key, [new Github(id, repo), new Map]);
             }
-            load(v) {
+            addRouter(key, ext, f, ...arg) {
+                ext.split(',').forEach(v => {
+                    const _router = this._repo.get(key)[1];
+                    _router.set(v, [f, ...arg]);
+                });
+            }
+            load(key, v) {
                 const ext = v.split('.').pop();
-                if(!this._router.has(ext)) return;
-                this._git.setParser(...this._router.get(ext));
-                this._git.load(v);
+                const _git = this._repo.get(key)[0];
+                const _router = this._repo.get(key)[1];
+                if(!_router.has(ext)){return;}
+                _git.setParser(..._router.get(ext));
+                _git.load(v);
             }
         }
 
-        const lwr = new LoaderWithRoute('octref', 'polacode');
-        lwr.add('jpg,png,gif', parseImg, el('img'));
-        lwr.add('md', parseMd, el('.block'));
+        const lwr = new LoaderWithRoute();
+        lwr.addRepo('pola', 'octref', 'polacode');
+        lwr.addRouter('pola', 'jpg,png,gif', parseImg, el('img'));
+        lwr.addRouter('pola', 'md', parseMd, el('.block'));
         
-        lwr.load('icon.png');
-        lwr.load('README.md');
+        lwr.addRepo('git-sketch', 'mathieudutour', 'git-sketch-plugin');
+        lwr.addRouter('git-sketch', 'jpg,png,gif', parseImg, el('img'));
+        lwr.addRouter('git-sketch', 'md', parseMd, el('.block'))
 
+        lwr.load('pola', 'README.md');
+        lwr.load('git-sketch', 'logo.png');
+        // lwr.load('icon.png');
+        // lwr.load('README.md');
     </script>
 </body>
 </html>
