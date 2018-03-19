@@ -16,7 +16,7 @@
             constructor(id, repo){
                 this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
             }
-            load(path = 'README.md'){
+            load(path){
                 const id = 'callback' + Github._id++;
                 const f = Github[id] = ({data: {content}}) => {
                     delete Github[id];
@@ -81,7 +81,6 @@
                 ext.split(',').forEach(v=>this._router.set(v, [f, ...arg]));
             }
             load(v) {
-                // const ext = this._v.split('.').pop();
                 const ext = v.split('.').pop();
                 if(!this._router.has(ext)) return;
                 this._git.setParser(...this._router.get(ext));

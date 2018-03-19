@@ -15,19 +15,22 @@
             constructor(id, repo){
                 this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
             }
-            load(path = 'README.md'){
+            load(path){
                 const id = 'callback' + Github._id++;
                 const f = Github[id] = ({data: {content}}) => {
                     delete Github[id];
                     document.head.removeChild(s);
-                    this._parser.parse(content);
+                    this._parser(content);
                 }
                 const s = document.createElement('script');
                 s.src = `${this._base + path}?callback=Github.${id}`;
                 document.head.appendChild(s);
             }
             setParser(loader){
-                this._parser = loader;
+                if(!(loader instanceof Loader)) { 
+                    throw new Error('param is must be instance of Loader');
+                }
+                this._parser = loader._parse.bind(loader);
             }
         }
         Github._id = 0;
@@ -75,9 +78,11 @@
         loader.setParser(img);
         loader.load('icon.png');
 
-        const md = new MdLoader('.block');
-        loader.setParser(md);
-        loader.load('README.md');
+        setTimeout(function() {
+            const md = new MdLoader('.block');
+            loader.setParser(md);
+            loader.load('README.md');
+        }, 500);
     </script>
 </body>
 </html>
