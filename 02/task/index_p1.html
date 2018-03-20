@@ -4,35 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <style>
-        .p1, .p2 {
-            float: left;
-            height: 100%;
-            width: 50%;
-            border: 1px;
-        }
-    </style>
+    <title>PRACTICE #1</title>
 </head>
 <body>
-    <div class="p1">
-        <h1>PRACTICE #1</h1>
-        <img class="img" src="" alt="">
-        <div class="text"></div>
-    </div>
-    <div class="p2">
-        <h1>PRACTICE #2</h1>
-        <img class="img-1" src="" alt="">
-        <div class="text-1"></div>
-        <img class="img-2" src="" alt="">
-        <div class="text-2"></div>
-    </div>
-    
+    <h1>PRACTICE #1</h1>
+    <img class="img" src="">
+    <div class="text"></div>
     <script>
         const el = v => document.querySelector(v);
-        //-------------------------
-        // PRACTICE #1 START
-        //-------------------------
+
         const Github = class{
             constructor(id, repo){
                 this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
@@ -49,7 +29,9 @@
                 document.head.appendChild(s);
             }
             setParser(loader) { 
-                if(!(loader instanceof Loader)) { throw new Error('argument is must be instance of Loader.'); }
+                if(!(loader instanceof Loader)) { 
+                    throw new Error('argument is must be instance of Loader.');
+                }
                 this._parser = loader.parse.bind(loader);
             }
         }
@@ -97,98 +79,13 @@
         const img = new ImageLoader('img');
         loader.setParser(img);
         loader.load('icon.png');
+        // JSONP를 통한 이미지 요청이 완료되기 전에 마크다운 파서가 Github에 설정되어 예외 발생
+        // 임시로 지연을 주기 위해 setTimeout 사용
         setTimeout(function() {
             const md = new MdLoader('.text');
             loader.setParser(md);
             loader.load('README.md');
         }, 500);
-        //-------------------------
-        // PRACTICE #1 END
-        //-------------------------
-
-        //-------------------------
-        // PRACTICE #2 START
-        //-------------------------
-        const Github2 = class {            
-            constructor(id, repo){
-                this._base = `https://api.github.com/repos/${id}/${repo}/contents/`;
-            }
-            load(path){
-                const id = 'callback' + Github2._id++;
-                const f = Github2[id] = ({data: {content}}) => {
-                    delete Github2[id];
-                    document.head.removeChild(s);
-                    this._parser[0](content, ...this._parser[1]);
-                }
-                const s = document.createElement('script');
-                s.src = `${this._base + path}?callback=Github2.${id}`;
-                document.head.appendChild(s);
-            }
-            setParser(f, ...arg){this._parser = [f, arg];}
-        }
-        Github2._id = 0;
-
-        const LoadRouter = class {
-            constructor() {
-                this._router = new Map;
-            }
-            addRepo(key, id, repo){
-                const _git = new Github2(id, repo);
-                const _parser = new Map;
-                this._router.set(key, [_git, _parser]);
-            }
-            addRouter(key, exts, f, ...arg) {
-                exts.split(',').forEach(ext => {
-                    const _parser = this._router.get(key)[1];
-                    _parser.set(ext, [f, ...arg]);
-                });
-            }
-            load(key, v) {
-                const _git = this._router.get(key)[0];
-                const _parser = this._router.get(key)[1];
-                const ext = v.split('.').pop();
-                if(!_parser.has(ext)){return;}
-                _git.setParser(..._parser.get(ext));
-                _git.load(v);
-            }
-        }
-
-        const parseMd = (v, el) => el.innerHTML = d64(v).split('\n').map(v=>{
-            let i = 3;
-            while(i--){
-                if(v.startsWith('#'.repeat(i + 1))) {
-                    return `<h${i + 1}>${v.substr(i + 1)}</h${i + 1}>`;
-                }
-            }
-            return v;
-        }).join('<br>');
-
-        const d64 = v => decodeURIComponent(
-            atob(v).split('').map(
-                c =>'%'+('00'+c.charCodeAt(0).toString(16)
-            ).slice(-2)).join('')
-        );
-
-        const parseImg = (v, el) => el.src=`data:image/png;base64, ${v}`;
-
-        const loadRouter = new LoadRouter();
-        loadRouter.addRepo('pola', 'octref', 'polacode');
-        loadRouter.addRouter('pola', 'jpg,png,gif', parseImg, el('.p2 .img-1'));
-        loadRouter.addRouter('pola', 'md', parseMd, el('.p2 .text-1'));
-        
-        loadRouter.addRepo('git-sketch', 'mathieudutour', 'git-sketch-plugin');
-        loadRouter.addRouter('git-sketch', 'jpg,png,gif', parseImg, el('.p2 .img-2'));
-        loadRouter.addRouter('git-sketch', 'md', parseMd, el('.p2 .text-2'));
-
-        loadRouter.load('pola', 'icon.png');
-        loadRouter.load('git-sketch', 'logo.png');
-        setTimeout(()=>{
-            loadRouter.load('pola', 'README.md');
-            loadRouter.load('git-sketch', 'README.md');
-        }, 500);
-        //-------------------------
-        // PRACTICE #2 END
-        //-------------------------
     </script>
 </body>
 </html>
