@@ -38,7 +38,7 @@
         // Github 클래스는 정적으로 정의되지만,
         // Github 클래스의 멤버 _parser는 런타임에서 동적으로 설정되어 실행된다.
 
-        const el = v=>document.querySelector(v);
+        const el = v => document.querySelector(v);
         const parseMd = (v, el) => el.innerHTML = d64(v).split('\n').map(v=>{
             let i = 3;
             while(i--){
@@ -74,23 +74,23 @@
         // 3. 실행시점 선택 위임
         const LoaderWithRoute = class {
             constructor() {
-                this._repo = new Map;
+                this._router = new Map;
             }
             addRepo(key, id, repo) {
-                this._repo.set(key, [new Github(id, repo), new Map]);
+                this._router.set(key, [new Github(id, repo), new Map]);
             }
             addRouter(key, ext, f, ...arg) {
                 ext.split(',').forEach(v => {
-                    const _router = this._repo.get(key)[1];
-                    _router.set(v, [f, ...arg]);
+                    const _parser = this._router.get(key)[1];
+                    _parser.set(v, [f, ...arg]);
                 });
             }
             load(key, v) {
                 const ext = v.split('.').pop();
-                const _git = this._repo.get(key)[0];
-                const _router = this._repo.get(key)[1];
-                if(!_router.has(ext)){return;}
-                _git.setParser(..._router.get(ext));
+                const _git = this._router.get(key)[0];
+                const _parser = this._router.get(key)[1];
+                if(!_parser.has(ext)){return;}
+                _git.setParser(..._parser.get(ext));
                 _git.load(v);
             }
         }
